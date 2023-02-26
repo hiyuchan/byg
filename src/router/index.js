@@ -4,6 +4,7 @@ import Index from '@/components/Index'
 import Print from '@/components/Print'
 import PrintQrCode from '@/components/PrintQrCode'
 import ItemDetail from '@/components/ItemDetail'
+import Freezer from '@/components/Freezer'
 
 Vue.use(Router)
 
@@ -28,6 +29,11 @@ export default new Router({
       path: '/detail',
       name: 'detail',
       component: ItemDetail
+    },
+    {
+      path: '/Freezer',
+      name: 'freezer',
+      component: Freezer
     }
   ]
 })

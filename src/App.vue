@@ -24,4 +24,12 @@ export default {
   width: 100vw;
   min-height: 100vh;
 }
+.flex_acsb{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flex{
+  display: flex;
+}
 </style>

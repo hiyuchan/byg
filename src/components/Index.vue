@@ -3,6 +3,7 @@
         <el-header height="40px">
             <el-button type="primary" size="small" @click="addInfo">添加</el-button>
             <el-button type="danger" size="small" @click="batchDelInfo">删除</el-button>
+            <el-button type="warning" size="small" @click="goFreezer">冻库</el-button>
         </el-header>
         <div class="table-box">
           <el-table  border :data="list" @selection-change="selectInfo">
@@ -1783,7 +1784,6 @@ export default {
         data.forEach(item => {
           item.info = JSON.parse(item.info)
         })
-
         this.list = data
         this.total = count
       })
@@ -1973,6 +1973,9 @@ export default {
       sessionStorage.setItem('codeRow', JSON.stringify(row))
       window.open('#/PrintCode')
       // window.open('#/detail?id=' + row.id)
+    },
+    goFreezer () {
+      this.$router.push('/Freezer')
     }
   },
   watch: {
