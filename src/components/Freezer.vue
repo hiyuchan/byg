@@ -20,7 +20,8 @@
          :class="[cell.book_id?'active-core':'']">
           <div class="flex_acsb">
             <p>{{cell.name}}</p>
-            <el-button type="danger" size="mini" @click.stop="delCell(cell)">删除</el-button>
+            <!-- <el-button type="danger" size="mini" @click.stop="delCell(cell)">删除</el-button> -->
+            <el-button v-show="cell.book_id" type="danger" size="mini" @click.stop="moveCell(cell)">移库</el-button>
           </div>
           <p class="fs text" style="text-align:center">{{cell.book?cell.book.name:''}}</p>
           <p style="text-align:center">{{filterTime(cell.in_library_time)}}</p>
@@ -87,6 +88,30 @@
         <el-button type="primary" @click="handleInCell">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 移库 -->
+    <el-dialog
+      title="移库操作"
+      :visible.sync="moveDialog"
+      width="80%"
+      center>
+        <div class="flex_acs">
+          <div class="wrapper-box">
+            <div v-for="core in emptyCore" :key="core.id"
+             @click="checkEmptyCore(core)"
+             class="move-item fs"
+             :class="[activeEmptyCore&&core.id == activeEmptyCore.id?'active-core':'']">{{core.name}}</div>
+          </div>
+          <div class="wrapper-box">
+          <div v-for="cell in emptyCell" :key="cell.id"
+          @click="checkEmptyCell(cell)"
+          class="move-item fs"
+          :class="[activeEmptyCell&&cell.id == activeEmptyCell.id?'active-core':'']">{{cell.name}}</div></div>
+        </div>
+        <span slot="footer" class="dialog-footer">
+        <el-button @click="closeMoveDialog">取 消</el-button>
+        <el-button type="primary" @click="submitMoveDialog">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -112,7 +137,12 @@ export default {
       tableData: [],
       page: 1,
       total: 0,
-      clickTimer: null
+      clickTimer: null,
+      moveDialog: false,
+      emptyCore: [],
+      emptyCell: [],
+      activeEmptyCore: {},
+      activeEmptyCell: null
     }
   },
   mounted () {
@@ -205,7 +235,6 @@ export default {
       this.actionType = 'create_cell'
       this.editType = 'cell'
     },
-
     // 点击格子获取列表
     handleCell (cell) {
       var that = this
@@ -306,6 +335,53 @@ export default {
         })
       }).catch(() => this.$message.info('删除失败'))
     },
+    moveCell (cell) {
+      this.$confirm(`是否要对${cell.book.name}进行移库`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        center: true,
+        lockScroll: true,
+        customClass: 'message-box',
+        type: 'warning'
+      }).then(() => {
+        this.getEmptyCore()
+        this.activeCell = cell
+        this.moveDialog = true
+      })
+    },
+    getEmptyCore () {
+      request.get('/empty/core').then((res) => {
+        this.emptyCore = res.data
+      }).catch((err) => {
+        this.$message.error(err.response.data.detail)
+      })
+    },
+    checkEmptyCore (core) {
+      this.activeEmptyCell = null
+      this.activeEmptyCore = core
+      this.emptyCell = core.cell
+      console.log(this.emptyCell)
+    },
+    checkEmptyCell (cell) {
+      this.activeEmptyCell = cell
+    },
+    closeMoveDialog () {
+      this.moveDialog = false
+      this.emptyCell = []
+      this.activeEmptyCore = null
+      this.activeEmptyCell = null
+    },
+    submitMoveDialog () {
+      if (!this.activeEmptyCell) return this.$message.error('请先选择库')
+      request.post(`/move/book?book_id=${this.activeCell.book_id}&cell_id=${this.activeEmptyCell.id}`).then(() => {
+        this.$message.success('移库成功')
+        this.handleCore(this.activeCore)
+      }).catch((err) => {
+        this.$message.error(err.response.data.detail)
+      }).finally(() => {
+        this.closeMoveDialog()
+      })
+    },
     // 选中列表人
     handleCurrentChange (row) {
       this.activePeople = row
@@ -318,8 +394,6 @@ export default {
   },
   filters: {
     filterTime (date) {
-      console.log(date)
-
       return date.replace(/T/g, ' ').replace(/.[\d]{3}Z/, ' ')
     }
   }
@@ -416,6 +490,23 @@ h2{
 .table-class.el-table--enable-row-hover .el-table__body tr:hover>td.el-table__cell{
   background-color: #409EFF !important;
 }
+.wrapper-box{
+  border: 1px solid #409EFF;
+  flex: 0 0 30%;
+  height: 50vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 10px;
+}
+.move-item{
+  cursor: pointer;
+  text-align: center;
+  border: 1px solid #000;
+  /* width: 80%; */
+  /* background-color: #1f1a1a; */
+  padding: 20px;
+  margin-bottom: 20px;
+}
 @media (max-width:900px) {
 .table_cell_style{
   color: #000;
@@ -450,7 +541,7 @@ h2{
     font-size: 40px;
   }
   .fs{
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     letter-spacing: 1px;
   }

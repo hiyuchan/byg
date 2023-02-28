@@ -29,6 +29,11 @@ export default {
   align-items: center;
   justify-content: space-between;
 }
+.flex_acs{
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
 .flex{
   display: flex;
 }
