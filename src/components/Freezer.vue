@@ -24,7 +24,10 @@
             <el-button v-show="cell.book_id" type="danger" size="mini" @click.stop="moveCell(cell)">移库</el-button>
           </div>
           <p class="fs text" style="text-align:center">{{cell.book?cell.book.name:''}}</p>
-          <p style="text-align:center">{{filterTime(cell.in_library_time)}}</p>
+          <div v-show="cell.book_id">
+            <p style="text-align:right;margin:5px 0">存放天数：{{cell.date}}天</p>
+            <p style="text-align:right">{{filterTime(cell.in_library_time)}}</p>
+          </div>
         </div>
       </div>
       <div class="wrapper cell-wrapper"  @click="handleAdd">
@@ -373,7 +376,7 @@ export default {
     },
     submitMoveDialog () {
       if (!this.activeEmptyCell) return this.$message.error('请先选择库')
-      request.post(`/move/book?book_id=${this.activeCell.book_id}&cell_id=${this.activeEmptyCell.id}`).then(() => {
+      request.post(`/move/book?book_id=${this.activeCell.book_id}&cell_id=${this.activeEmptyCell.id}&old_cell_id=${this.activeCell.id}`).then(() => {
         this.$message.success('移库成功')
         this.handleCore(this.activeCore)
       }).catch((err) => {
@@ -478,7 +481,8 @@ h2{
   font-size: 40px;
 }
 .text{
-  line-height: 80px;
+  height: 60px;
+  line-height: 60px;
   margin-top: 20px;
 }
 .table-class{
@@ -527,7 +531,7 @@ h2{
   .cell-item{
     width: 60%;
     border: 1px solid #000;
-    height: 100px;
+    /* height: 100px; */
     padding: 10 25px;
   }
   .add-item{
